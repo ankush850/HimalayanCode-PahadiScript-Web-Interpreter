@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Shared code — PahadiScript{% endblock %}
+{% block content %}
+<section class="share-view glass panel">
+  <h1>Shared snippet</h1>
+  <p class="muted" id="share-status">Loading…</p>
+  <pre class="share-code" id="share-code"></pre>
+  <div class="share-actions">
+    <a class="btn btn-primary" id="open-editor" href="/editor">Open in editor</a>
+    <button type="button" class="btn btn-ghost" id="btn-copy-code">Copy code</button>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  const shareId = {{ share_id | tojson }};
+  const pre = document.getElementById("share-code");
+  const status = document.getElementById("share-status");
+  fetch(`/api/share/${encodeURIComponent(shareId)}`)
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data.ok) {
+        status.textContent = data.error || "Not found";
+        return;
+      }
+      status.textContent = "Loaded from the peaks.";
+      pre.textContent = data.code;
+      window.__shareCode = data.code;
+      const ed = document.getElementById("open-editor");
+      if (ed) ed.href = `/editor?load=${encodeURIComponent(shareId)}`;
+    })
+    .catch(() => {
+      status.textContent = "Could not load snippet.";
+    });
+  document.getElementById("btn-copy-code").addEventListener("click", () => {
+    const t = window.__shareCode || "";
+    navigator.clipboard.writeText(t);
+  });
+</script>
+{% endblock %}
