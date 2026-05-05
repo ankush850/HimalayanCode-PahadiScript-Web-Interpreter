@@ -1,0 +1,9 @@
+shuru {
+    phir (le ank r = 1; r <= 3; r = r + 1) {
+        phir (le ank c = 1; c <= 3; c = c + 1) {
+            bol(r * c);
+        };
+    };
+
+    roko;
+}

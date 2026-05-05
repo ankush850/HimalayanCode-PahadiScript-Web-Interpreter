@@ -1,0 +1,30 @@
+kaam isPrime(ank n) {
+    agar (n <= 1) {
+        paucha galat;
+    };
+
+    le ank i = 2;
+    jabtak (i * i <= n) {
+        agar (n % i == 0) {
+            paucha galat;
+        };
+
+        i = i + 1;
+    };
+
+    paucha sahi;
+}
+
+shuru {
+    le ank num = 17;
+
+    agar (isPrime(num) == sahi) {
+        bol(num);
+        bol(" is prime");
+    } magar {
+        bol(num);
+        bol(" is not prime");
+    }
+
+    roko;
+}

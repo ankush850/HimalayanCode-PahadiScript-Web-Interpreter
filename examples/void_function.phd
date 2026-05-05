@@ -1,0 +1,10 @@
+kaam khali greet(akshar ch) {
+    bol("Hello from kaam khali");
+    bol(ch);
+    paucha;
+}
+
+shuru {
+    greet("Z");
+    roko;
+}

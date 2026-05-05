@@ -1,0 +1,14 @@
+kaam factorial(ank n) {
+    agar (n <= 1) {
+        paucha 1;
+    }
+    paucha n * factorial(n - 1);
+}
+
+shuru {
+    le ank num = 5;
+    le ank result = factorial(num);
+    bol("Factorial: ");
+    bol(result);
+    roko;
+}

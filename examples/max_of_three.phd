@@ -1,0 +1,16 @@
+kaam max3(ank a, ank b, ank c) {
+    le ank m = a;
+    agar (b > m) {
+        m = b;
+    };
+    agar (c > m) {
+        m = c;
+    };
+    paucha m;
+}
+
+shuru {
+    bol("Max:");
+    bol(max3(8, 19, 12));
+    roko;
+}

@@ -1,0 +1,19 @@
+shuru {
+    le ank n = 10;
+    le ank a = 0;
+    le ank b = 1;
+    le ank i = 2;
+    
+    bol(a);
+    bol(b);
+    
+    jabtak (i < n) {
+        le ank c = a + b;
+        bol(c);
+        a = b;
+        b = c;
+        i = i + 1;
+    };
+
+    roko;
+}

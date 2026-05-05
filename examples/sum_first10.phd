@@ -1,0 +1,12 @@
+shuru {
+    le ank i = 1;
+    le ank total = 0;
+    jabtak (i <= 10) {
+        total = total + i;
+        i = i + 1;
+    };
+
+    bol("Sum 1..10:");
+    bol(total);
+    roko;
+}

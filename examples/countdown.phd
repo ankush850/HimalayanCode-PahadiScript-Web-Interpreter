@@ -1,0 +1,10 @@
+shuru {
+    le ank n = 5;
+    jabtak (n > 0) {
+        bol(n);
+        n = n - 1;
+    };
+
+    bol("Lift off");
+    roko;
+}

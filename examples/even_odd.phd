@@ -1,0 +1,10 @@
+shuru {
+    le ank n = 27;
+    agar (n % 2 == 0) {
+        bol("Even");
+    } magar {
+        bol("Odd");
+    };
+
+    roko;
+}

@@ -1,0 +1,12 @@
+kaam sumTo(ank n) {
+    agar (n <= 0) {
+        paucha 0;
+    };
+    paucha n + sumTo(n - 1);
+}
+
+shuru {
+    bol("Sum to 6:");
+    bol(sumTo(6));
+    roko;
+}

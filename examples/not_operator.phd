@@ -1,0 +1,10 @@
+shuru {
+    le ank rain = 0;
+    agar (nahi rain) {
+        bol("Go trekking");
+    } magar {
+        bol("Stay home");
+    };
+
+    roko;
+}

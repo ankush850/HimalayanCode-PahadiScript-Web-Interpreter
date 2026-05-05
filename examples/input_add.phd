@@ -1,0 +1,10 @@
+shuru {
+    bol("Enter first number:");
+    sun a;
+    bol("Enter second number:");
+    sun b;
+
+    bol("Sum:");
+    bol(a + b);
+    roko;
+}

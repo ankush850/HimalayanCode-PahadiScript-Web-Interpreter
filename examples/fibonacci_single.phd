@@ -1,0 +1,12 @@
+kaam fib(ank n) {
+    agar (n <= 1) {
+        paucha n;
+    };
+    paucha fib(n - 1) + fib(n - 2);
+}
+
+shuru {
+    bol("fib(8):");
+    bol(fib(8));
+    roko;
+}

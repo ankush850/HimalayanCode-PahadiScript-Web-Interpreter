@@ -1,0 +1,9 @@
+kaam square(ank x) {
+    paucha x * x;
+}
+
+shuru {
+    bol("Square of 9:");
+    bol(square(9));
+    roko;
+}

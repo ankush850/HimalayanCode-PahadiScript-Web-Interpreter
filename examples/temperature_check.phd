@@ -1,0 +1,15 @@
+shuru {
+    le ank t = 14;
+
+    agar (t <= 0) {
+        bol("Freezing");
+    } magar {
+        agar (t < 20) {
+            bol("Cold");
+        } magar {
+            bol("Warm");
+        };
+    };
+
+    roko;
+}

@@ -1,0 +1,7 @@
+shuru {
+    bol("Type something:");
+    sun text;
+    bol("You typed:");
+    bol(text);
+    roko;
+}

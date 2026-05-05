@@ -1,0 +1,14 @@
+kaam gcd(ank a, ank b) {
+    jabtak (b != 0) {
+        le ank t = b;
+        b = a % b;
+        a = t;
+    };
+    paucha a;
+}
+
+shuru {
+    bol("GCD of 48 and 18:");
+    bol(gcd(48, 18));
+    roko;
+}

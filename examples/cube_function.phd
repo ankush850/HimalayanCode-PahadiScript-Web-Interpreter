@@ -1,0 +1,9 @@
+kaam cube(ank x) {
+    paucha x * x * x;
+}
+
+shuru {
+    bol("Cube of 4:");
+    bol(cube(4));
+    roko;
+}
