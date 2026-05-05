@@ -1,0 +1,38 @@
+kaam add(ank a, ank b) {
+    paucha a + b;
+}
+
+kaam subtract(ank a, ank b) {
+    paucha a - b;
+}
+
+kaam multiply(ank a, ank b) {
+    paucha a * b;
+}
+
+kaam divide(ank a, ank b) {
+    agar (b == 0) {
+        bol("Error: Division by zero");
+        paucha 0;
+    }
+    paucha a / b;
+}
+
+shuru {
+    le ank x = 15;
+    le ank y = 3;
+    
+    bol("Addition: ");
+    bol(add(x, y));
+    
+    bol("Subtraction: ");
+    bol(subtract(x, y));
+    
+    bol("Multiplication: ");
+    bol(multiply(x, y));
+    
+    bol("Division: ");
+    bol(divide(x, y));
+    
+    roko;
+}

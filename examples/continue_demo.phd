@@ -1,0 +1,10 @@
+shuru {
+    phir (le ank i = 1; i <= 8; i = i + 1) {
+        agar (i % 2 == 0) {
+            chalo;
+        };
+        bol(i);
+    };
+
+    roko;
+}

@@ -1,0 +1,12 @@
+shuru {
+    le ank i = 1;
+    jabtak (i <= 10) {
+        agar (i == 6) {
+            bas;
+        };
+        bol(i);
+        i = i + 1;
+    };
+
+    roko;
+}

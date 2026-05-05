@@ -1,0 +1,12 @@
+shuru {
+    le ank marks = 72;
+    le ank attendance = 80;
+
+    agar ((marks >= 60) aur (attendance >= 75)) {
+        bol("Pass");
+    } magar {
+        bol("Fail");
+    };
+
+    roko;
+}

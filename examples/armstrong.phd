@@ -1,0 +1,19 @@
+shuru {
+    le ank n = 153;
+    le ank t = n;
+    le ank sum = 0;
+
+    jabtak (t > 0) {
+        le ank d = t % 10;
+        sum = sum + (d * d * d);
+        t = t / 10;
+    };
+
+    agar (sum == n) {
+        bol("Armstrong");
+    } magar {
+        bol("Not Armstrong");
+    };
+
+    roko;
+}
