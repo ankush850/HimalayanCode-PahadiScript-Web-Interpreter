@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}PahadiScript{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="page">
+  <div class="bg-gradient" aria-hidden="true"></div>
+  <div class="bg-noise" aria-hidden="true"></div>
+  <header class="topbar glass">
+    <a class="brand" href="/">
+      <span class="brand-mark">प</span>
+      <span class="brand-text">PahadiScript</span>
+    </a>
+    <nav class="nav-links">
+      <a href="/editor">Editor</a>
+      <a href="/dashboard">Dashboard</a>
+    </nav>
+    <div class="nav-auth" id="nav-auth">
+      <span class="nav-user hidden" id="nav-user"></span>
+      <a class="btn btn-ghost" href="/login" id="nav-login">Login</a>
+      <a class="btn btn-primary" href="/register" id="nav-register">Register</a>
+      <button type="button" class="btn btn-ghost hidden" id="nav-logout">Logout</button>
+    </div>
+  </header>
+  <main class="main-content">{% block content %}{% endblock %}</main>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

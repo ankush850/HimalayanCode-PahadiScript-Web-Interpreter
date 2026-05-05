@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Login — PahadiScript{% endblock %}
+{% block content %}
+<div class="auth-card glass">
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to save runs and open your dashboard.</p>
+  <form class="auth-form" id="form-login">
+    <label>Username<input type="text" name="username" autocomplete="username" required /></label>
+    <label>Password<input type="password" name="password" autocomplete="current-password" required /></label>
+    <p class="form-error hidden" id="login-error"></p>
+    <button type="submit" class="btn btn-primary btn-block">Login</button>
+  </form>
+  <p class="auth-switch">New here? <a href="/register">Create an account</a></p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.getElementById("form-login").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const err = document.getElementById("login-error");
+    err.classList.add("hidden");
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      err.textContent = data.error || "Login failed";
+      err.classList.remove("hidden");
+      return;
+    }
+    window.location.href = "/editor";
+  });
+</script>
+{% endblock %}
