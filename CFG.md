@@ -154,17 +154,3 @@ expr_list           -> expression
 
 ---
 
-## 4. Separators & Utilities
-
-```text
-sep_plus            -> NEWLINE 
-                     | SEMI 
-                     | sep_plus NEWLINE 
-                     | sep_plus SEMI
-
-opt_newlines        -> NEWLINE opt_newlines 
-                     | ε
-
-opt_semi            -> SEMI 
-                     | ε
-```
