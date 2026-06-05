@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import './styles/fonts.css';
+@import './styles/theme.css';
+
+@config "../tailwind.config.js";
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #FFFFFF;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+}

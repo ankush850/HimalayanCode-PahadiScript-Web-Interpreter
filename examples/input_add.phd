@@ -1,4 +1,6 @@
 shuru {
+    le ank a;
+    le ank b;
     bol("Enter first number:");
     sun a;
     bol("Enter second number:");
@@ -8,3 +10,4 @@ shuru {
     bol(a + b);
     roko;
 }
+

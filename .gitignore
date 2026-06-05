@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Databases
+*.db
+*.sqlite
+instance/
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node.js & React builds
+node_modules/
+landing/node_modules/
+landing/dist/
+*.log
