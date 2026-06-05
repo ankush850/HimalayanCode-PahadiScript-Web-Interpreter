@@ -11,7 +11,17 @@ from app.extensions import db, limiter, migrate
 def create_app(config_object: type[Config] | None = None) -> Flask:
     """Create and configure the Flask application instance."""
 
-    app = Flask(__name__, instance_relative_config=True)
+    env = (os.environ.get("FLASK_ENV") or "").lower()
+    is_prod = env == "production"
+
+    if is_prod:
+        app = Flask(__name__, 
+                    static_folder="../landing/dist", 
+                    static_url_path="",
+                    instance_relative_config=True)
+    else:
+        app = Flask(__name__, instance_relative_config=True)
+        
     os.makedirs(app.instance_path, exist_ok=True)
 
     if config_object is None:
