@@ -187,7 +187,7 @@ export default function DashboardPage() {
               backgroundColor: 'rgba(52, 152, 219, 0.05)',
               borderWidth: 2,
               tension: 0.4,
-              fill: true,
+              fill: false,
             }
           ],
         },

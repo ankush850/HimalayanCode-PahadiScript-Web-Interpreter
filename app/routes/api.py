@@ -167,7 +167,7 @@ def analytics():
         db.query(func.count(ExecutionHistory.id)).filter_by(user_id=uid, success=True).scalar() or 0
     )
     failures = total - successes
-    avg_ms = db.query(func.avg(ExecutionHistory.execution_time_ms)).filter_by(user_id=uid).scalar() or 0.0
+    avg_ms = db.query(func.avg(ExecutionHistory.execution_time_ms)).filter_by(user_id=uid, success=True).scalar() or 0.0
 
     # Fetch the last 100 runs to group by time (minute) instead of just by day
     recent_runs = (
@@ -200,12 +200,15 @@ def analytics():
         entry = daily_out[-1]
         if r.success:
             entry["success"] += 1
+            entry["_total_ms"] += r.execution_time_ms
+            entry["_count"] += 1
         else:
             entry["failure"] += 1
             
-        entry["_total_ms"] += r.execution_time_ms
-        entry["_count"] += 1
-        entry["avg_execution_ms"] = round(entry["_total_ms"] / entry["_count"], 2)
+        if entry["_count"] > 0:
+            entry["avg_execution_ms"] = round(entry["_total_ms"] / entry["_count"], 2)
+        else:
+            entry["avg_execution_ms"] = 0.0
 
     # Clean up temp keys and limit to last 20 time points for the chart
     for entry in daily_out:
