@@ -208,11 +208,11 @@ def analytics():
         if entry["_count"] > 0:
             entry["avg_execution_ms"] = round(entry["_total_ms"] / entry["_count"], 2)
         else:
-            entry["avg_execution_ms"] = 0.0
+            entry["avg_execution_ms"] = None
 
     # Clean up temp keys and limit to last 20 time points for the chart
     for entry in daily_out:
-        entry["total_execution_ms"] = round(entry["_total_ms"], 2)
+        entry["total_execution_ms"] = round(entry["_total_ms"], 2) if entry["_count"] > 0 else None
         entry.pop("_total_ms", None)
         entry.pop("_count", None)
         

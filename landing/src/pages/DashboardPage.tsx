@@ -72,6 +72,7 @@ export default function DashboardPage() {
   // Construct charts
   useEffect(() => {
     if (loading || error || !summary || daily.length === 0) return;
+    console.log('API daily data:', daily);
 
     // 1. Doughnut Success/Failure Chart
     if (pieCanvasRef.current) {
@@ -174,20 +175,22 @@ export default function DashboardPage() {
             {
               label: 'Total Execution (ms)',
               data: daily.map((d) => d.total_execution_ms),
-              borderColor: 'rgba(241, 196, 15, 0.9)',
-              backgroundColor: 'rgba(241, 196, 15, 0.05)',
+              borderColor: 'rgba(231, 76, 60, 0.9)',
+              backgroundColor: 'rgba(231, 76, 60, 0.05)',
               borderWidth: 2,
               tension: 0.4,
               fill: true,
+              spanGaps: true,
             },
             {
               label: 'Avg Execution (ms)',
               data: daily.map((d) => d.avg_execution_ms),
-              borderColor: 'rgba(52, 152, 219, 0.9)',
-              backgroundColor: 'rgba(52, 152, 219, 0.05)',
+              borderColor: 'rgba(46, 204, 113, 0.9)',
+              backgroundColor: 'rgba(46, 204, 113, 0.05)',
               borderWidth: 2,
               tension: 0.4,
-              fill: false,
+              fill: true,
+              spanGaps: true,
             }
           ],
         },
