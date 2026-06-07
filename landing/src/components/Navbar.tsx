@@ -1,28 +1,37 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const { user, logoutUser } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logoutUser();
-    navigate('/');
+    router.push('/');
   };
 
   const handleBeginJourney = () => {
     if (user) {
-      navigate('/editor');
+      router.push('/editor');
     } else {
-      navigate('/login');
+      router.push('/login');
     }
+  };
+
+  const getLinkClass = (href: string) => {
+    const isActive = pathname === href;
+    return `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`;
   };
 
   return (
     <header className="relative z-10 w-full">
       <nav className="flex justify-between items-center px-8 py-6 max-w-7xl mx-auto">
         {/* Logo */}
-        <Link to="/" className="text-3xl font-display font-normal tracking-tight text-black flex items-center gap-3 select-none">
+        <Link href="/" className="text-3xl font-display font-normal tracking-tight text-black flex items-center gap-3 select-none">
           <img src="/logo.png" alt="HimalayanCode Logo" className="w-8 h-8 object-contain" />
           <span>HimalayanCode</span>
         </Link>
@@ -31,49 +40,39 @@ export default function Navbar() {
         <div className="hidden md:flex items-center space-x-8">
           {user ? (
             <>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`
-                }
+              <Link
+                href="/"
+                className={getLinkClass('/')}
               >
                 Home
-              </NavLink>
-              <NavLink
-                to="/editor"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`
-                }
+              </Link>
+              <Link
+                href="/editor"
+                className={getLinkClass('/editor')}
               >
                 Editor
-              </NavLink>
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`
-                }
+              </Link>
+              <Link
+                href="/dashboard"
+                className={getLinkClass('/dashboard')}
               >
                 Dashboard
-              </NavLink>
-              <NavLink
-                to="/history"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`
-                }
+              </Link>
+              <Link
+                href="/history"
+                className={getLinkClass('/history')}
               >
                 History
-              </NavLink>
+              </Link>
             </>
           ) : (
             <>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors ${isActive ? 'text-black font-semibold' : 'text-[#6F6F6F] hover:text-black'}`
-                }
+              <Link
+                href="/"
+                className={getLinkClass('/')}
               >
                 Home
-              </NavLink>
+              </Link>
               <a
                 href="#"
                 className="text-sm font-medium text-[#6F6F6F] hover:text-black transition-colors"
@@ -129,3 +128,4 @@ export default function Navbar() {
     </header>
   );
 }
+
