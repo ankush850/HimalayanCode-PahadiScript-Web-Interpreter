@@ -7,10 +7,14 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const username = (data.username || '').trim();
+    const email = (data.email || '').trim().toLowerCase();
     const password = data.password || '';
 
     if (!username || username.length < 2) {
       return NextResponse.json({ ok: false, error: 'Username must be at least 2 characters' }, { status: 400 });
+    }
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ ok: false, error: 'A valid email address is required' }, { status: 400 });
     }
     if (!password || password.length < 6) {
       return NextResponse.json({ ok: false, error: 'Password must be at least 6 characters' }, { status: 400 });
@@ -21,8 +25,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Username already taken' }, { status: 409 });
     }
 
+    const existingEmail = await db.getUserByEmail(email);
+    if (existingEmail) {
+      return NextResponse.json({ ok: false, error: 'Email address already registered' }, { status: 409 });
+    }
+
     const passwordHash = bcrypt.hashSync(password, 10);
-    const user = await db.addUser(username, passwordHash);
+    const user = await db.addUser(username, email, passwordHash);
 
     await createSession(user.id);
 

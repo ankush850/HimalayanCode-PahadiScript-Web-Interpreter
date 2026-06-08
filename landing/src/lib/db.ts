@@ -80,11 +80,12 @@ export const db = {
     return data as UserSchema;
   },
 
-  async addUser(username: string, passwordHash: string): Promise<UserSchema> {
+  async addUser(username: string, email: string, passwordHash: string): Promise<UserSchema> {
     const { data, error } = await supabase
       .from('users')
       .insert({
         username: username.trim(),
+        email: email.trim().toLowerCase(),
         password_hash: passwordHash,
       })
       .select()
