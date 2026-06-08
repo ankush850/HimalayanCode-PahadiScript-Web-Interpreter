@@ -33,8 +33,15 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Supabase signInWithOtp error:', error);
+      let friendlyMessage = error.message;
+      
+      // Handle rate limit errors gracefully
+      if (error.status === 429 || friendlyMessage.toLowerCase().includes('rate limit')) {
+        friendlyMessage = 'Too many verification requests. Please wait a few minutes before trying again.';
+      }
+
       return NextResponse.json(
-        { ok: false, error: error.message },
+        { ok: false, error: friendlyMessage },
         { status: 400 }
       );
     }
