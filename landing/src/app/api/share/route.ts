@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const userId = await getSessionUser();
-    const share = db.addShare(code, userId);
+    const share = await db.addShare(code, userId);
 
     return NextResponse.json({
       ok: true,

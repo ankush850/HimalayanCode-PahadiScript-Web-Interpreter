@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: 'Authentication required' }, { status: 401 });
   }
 
-  const executions = db.getExecutions(userId);
+  const executions = await db.getExecutions(userId);
   const total = executions.length;
   const successes = executions.filter((e) => e.success).length;
   const failures = total - successes;

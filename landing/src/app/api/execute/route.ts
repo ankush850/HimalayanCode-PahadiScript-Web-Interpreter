@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     const userId = await getSessionUser();
     if (userId) {
-      db.addExecution(
+      await db.addExecution(
         userId,
         code,
         result.ok,

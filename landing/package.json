@@ -10,9 +10,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
     "@uiw/react-codemirror": "^4.25.10",
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
+    "google-auth-library": "^10.7.0",
     "lucide-react": "^1.17.0",
     "next": "^15.1.0",
     "react": "^19.2.6",

@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { share_id } = await params;
-    const share = db.getShare(share_id);
+    const share = await db.getShare(share_id);
 
     if (!share) {
       return NextResponse.json({ ok: false, error: 'Shared snippet not found' }, { status: 404 });

@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const username = (data.username || '').trim();
     const password = data.password || '';
 
-    const user = db.getUserByUsername(username);
+    const user = await db.getUserByUsername(username);
     if (!user || !bcrypt.compareSync(password, user.password_hash)) {
       return NextResponse.json({ ok: false, error: 'Invalid username or password' }, { status: 401 });
     }

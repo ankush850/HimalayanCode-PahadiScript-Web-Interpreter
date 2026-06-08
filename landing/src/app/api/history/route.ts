@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: 'Authentication required' }, { status: 401 });
   }
 
-  const executions = db.getExecutions(userId);
+  const executions = await db.getExecutions(userId);
   // Sort descending by created_at
   executions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 

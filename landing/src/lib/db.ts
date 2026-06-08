@@ -1,13 +1,20 @@
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const DB_DIR = path.join(process.cwd(), '../instance');
-const DB_PATH = path.join(DB_DIR, 'database.json');
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.warn('Warning: Supabase credentials are not fully configured in your environment variables.');
+}
+
+const supabase = createClient(SUPABASE_URL || '', SUPABASE_KEY || '');
 
 export interface UserSchema {
   id: number;
   username: string;
   password_hash: string;
+  email?: string;
+  google_id?: string;
   created_at: string;
 }
 
@@ -29,112 +36,145 @@ export interface SharedSchema {
   created_at: string;
 }
 
-interface DatabaseSchema {
-  users: UserSchema[];
-  execution_history: ExecutionSchema[];
-  shared_code: SharedSchema[];
-}
-
-function initDb() {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, JSON.stringify({ users: [], execution_history: [], shared_code: [] }, null, 2));
-  }
-}
-
-function readDb(): DatabaseSchema {
-  initDb();
-  try {
-    const data = fs.readFileSync(DB_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Error reading JSON DB, fallback to empty:', err);
-    return { users: [], execution_history: [], shared_code: [] };
-  }
-}
-
-function writeDb(db: DatabaseSchema) {
-  initDb();
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
-}
-
 export const db = {
-  // Users
-  getUsers(): UserSchema[] {
-    return readDb().users;
+  // Users lookup and register
+  async getUserById(id: number): Promise<UserSchema | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error || !data) return undefined;
+    return data as UserSchema;
   },
 
-  getUserById(id: number): UserSchema | undefined {
-    return readDb().users.find((u) => u.id === id);
-  },
-
-  getUserByUsername(username: string): UserSchema | undefined {
+  async getUserByUsername(username: string): Promise<UserSchema | undefined> {
     const normalized = username.trim().toLowerCase();
-    return readDb().users.find((u) => u.username.toLowerCase() === normalized);
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('username', normalized)
+      .single();
+    if (error || !data) return undefined;
+    return data as UserSchema;
   },
 
-  addUser(username: string, passwordHash: string): UserSchema {
-    const database = readDb();
-    const id = database.users.length > 0 ? Math.max(...database.users.map((u) => u.id)) + 1 : 1;
-    const newUser: UserSchema = {
-      id,
-      username: username.trim(),
-      password_hash: passwordHash,
-      created_at: new Date().toISOString(),
-    };
-    database.users.push(newUser);
-    writeDb(database);
-    return newUser;
+  async getUserByGoogleId(googleId: string): Promise<UserSchema | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('google_id', googleId)
+      .single();
+    if (error || !data) return undefined;
+    return data as UserSchema;
   },
 
-  // Executions
-  getExecutions(userId: number): ExecutionSchema[] {
-    return readDb().execution_history.filter((e) => e.user_id === userId);
+  async getUserByEmail(email: string): Promise<UserSchema | undefined> {
+    const normalized = email.trim().toLowerCase();
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('email', normalized)
+      .single();
+    if (error || !data) return undefined;
+    return data as UserSchema;
   },
 
-  addExecution(
+  async addUser(username: string, passwordHash: string): Promise<UserSchema> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        username: username.trim(),
+        password_hash: passwordHash,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      console.error('Supabase addUser error:', error);
+      throw error || new Error('Failed to insert user');
+    }
+    return data as UserSchema;
+  },
+
+  async addGoogleUser(username: string, email: string, googleId: string): Promise<UserSchema> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        username: username.trim(),
+        email: email.trim(),
+        google_id: googleId,
+        password_hash: '', // Google-authenticated users don't have local password hashes
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      console.error('Supabase addGoogleUser error:', error);
+      throw error || new Error('Failed to insert Google user');
+    }
+    return data as UserSchema;
+  },
+
+  // Executions (History & Analytics)
+  async getExecutions(userId: number): Promise<ExecutionSchema[]> {
+    const { data, error } = await supabase
+      .from('execution_history')
+      .select('*')
+      .eq('user_id', userId);
+    if (error || !data) return [];
+    return data as ExecutionSchema[];
+  },
+
+  async addExecution(
     userId: number,
     code: string,
     success: boolean,
     executionTimeMs: number,
     output: string | null,
     errorMessage: string | null
-  ): ExecutionSchema {
-    const database = readDb();
-    const id = database.execution_history.length > 0 ? Math.max(...database.execution_history.map((e) => e.id)) + 1 : 1;
-    const newExec: ExecutionSchema = {
-      id,
-      user_id: userId,
-      code,
-      success,
-      execution_time_ms: executionTimeMs,
-      output,
-      error_message: errorMessage,
-      created_at: new Date().toISOString(),
-    };
-    database.execution_history.push(newExec);
-    writeDb(database);
-    return newExec;
+  ): Promise<ExecutionSchema> {
+    const { data, error } = await supabase
+      .from('execution_history')
+      .insert({
+        user_id: userId,
+        code,
+        success,
+        execution_time_ms: Math.round(executionTimeMs),
+        output,
+        error_message: errorMessage,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      console.error('Supabase addExecution error:', error);
+      throw error || new Error('Failed to insert execution record');
+    }
+    return data as ExecutionSchema;
   },
 
-  // Shares
-  getShare(id: string): SharedSchema | undefined {
-    return readDb().shared_code.find((s) => s.id === id);
+  // Share system
+  async getShare(id: string): Promise<SharedSchema | undefined> {
+    const { data, error } = await supabase
+      .from('shared_code')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error || !data) return undefined;
+    return data as SharedSchema;
   },
 
-  addShare(code: string, userId: number | null): SharedSchema {
-    const database = readDb();
-    const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const newShare: SharedSchema = {
-      id,
-      user_id: userId,
-      code,
-      created_at: new Date().toISOString(),
-    };
-    database.shared_code.push(newShare);
-    writeDb(database);
-    return newShare;
+  async addShare(code: string, userId: number | null): Promise<SharedSchema> {
+    const { data, error } = await supabase
+      .from('shared_code')
+      .insert({
+        user_id: userId,
+        code,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      console.error('Supabase addShare error:', error);
+      throw error || new Error('Failed to insert shared code');
+    }
+    return data as SharedSchema;
   },
 };

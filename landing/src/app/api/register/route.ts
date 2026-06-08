@@ -16,13 +16,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
-    const existingUser = db.getUserByUsername(username);
+    const existingUser = await db.getUserByUsername(username);
     if (existingUser) {
       return NextResponse.json({ ok: false, error: 'Username already taken' }, { status: 409 });
     }
 
     const passwordHash = bcrypt.hashSync(password, 10);
-    const user = db.addUser(username, passwordHash);
+    const user = await db.addUser(username, passwordHash);
 
     await createSession(user.id);
 
