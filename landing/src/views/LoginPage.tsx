@@ -241,6 +241,8 @@ export default function LoginPage() {
           </div>
         )}
 
+
+
         {loginMode === 'password' ? (
           <form onSubmit={handleSubmit} className="flex flex-col">
             <label className="text-sm font-medium text-[#6F6F6F] mb-2 flex flex-col gap-1.5">

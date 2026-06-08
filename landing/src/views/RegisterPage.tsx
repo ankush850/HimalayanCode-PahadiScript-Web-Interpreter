@@ -5,15 +5,105 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
+interface GoogleCredentialResponse {
+  credential: string;
+}
+
+interface GoogleId {
+  initialize: (config: { client_id: string; callback: (response: GoogleCredentialResponse) => void }) => void;
+  renderButton: (element: HTMLElement | null, options: { theme?: string; size?: string; width?: number; text?: string; shape?: string }) => void;
+}
+
+interface GoogleAuth {
+  accounts: {
+    id: GoogleId;
+  };
+}
+
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   
   const { loginUser } = useAuth();
   const router = useRouter();
+
+  React.useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      return;
+    }
+
+    const handleGoogleLoginSuccess = async (response: GoogleCredentialResponse) => {
+      const idToken = response.credential;
+      setGoogleLoading(true);
+      setError('');
+      
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: idToken }),
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          loginUser(data.user);
+          router.push('/editor');
+        } else {
+          setError(data.error || 'Google registration failed');
+        }
+      } catch (err) {
+        console.error('Google registration error:', err);
+        setError('A network error occurred. Please try again.');
+      } finally {
+        setGoogleLoading(false);
+      }
+    };
+
+    const initializeGoogleButton = () => {
+      const google = (window as unknown as { google?: GoogleAuth }).google;
+      if (google) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleLoginSuccess,
+        });
+
+        google.accounts.id.renderButton(
+          document.getElementById('google-signup-button'),
+          { 
+            theme: 'outline', 
+            size: 'large', 
+            width: 356,
+            text: 'signup_with',
+            shape: 'pill'
+          }
+        );
+      }
+    };
+
+    const loadGoogleScript = () => {
+      if (document.getElementById('google-gsi-script')) {
+        initializeGoogleButton();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'google-gsi-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        initializeGoogleButton();
+      };
+      document.body.appendChild(script);
+    };
+
+    loadGoogleScript();
+  }, [router, loginUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,12 +207,26 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={submitting}
-            className="rounded-full py-3 bg-black text-white hover:scale-[1.02] transition-transform active:scale-[0.98] font-medium text-sm disabled:opacity-50"
+            disabled={submitting || googleLoading}
+            className="rounded-full py-3 bg-black text-white hover:scale-[1.02] transition-transform active:scale-[0.98] font-medium text-sm disabled:opacity-50 cursor-pointer"
           >
             {submitting ? 'Registering...' : 'Register'}
           </button>
         </form>
+
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <>
+            <div className="flex items-center my-6 text-[#6F6F6F] text-xs">
+              <div className="flex-1 border-t border-black/10"></div>
+              <span className="px-3">or</span>
+              <div className="flex-1 border-t border-black/10"></div>
+            </div>
+
+            <div className="flex justify-center w-full min-h-[44px]">
+              <div id="google-signup-button" className="w-full flex justify-center"></div>
+            </div>
+          </>
+        )}
 
         <p className="text-sm text-[#6F6F6F] text-center mt-6">
           Already have an account?{' '}
