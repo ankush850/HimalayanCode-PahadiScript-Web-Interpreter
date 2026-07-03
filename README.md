@@ -1,4 +1,4 @@
-# 🏔️ HimalayanCode<sup>®</sup>: PahadiScript Web Interpreter
+# 🏔️ HimalayanCode: PahadiScript Web Interpreter
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0%2B-green)](https://flask.palletsprojects.com/)
