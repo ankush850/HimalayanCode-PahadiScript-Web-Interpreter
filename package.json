@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm --prefix landing run dev",
     "build": "npm --prefix landing run build",
+    "start": "npm --prefix landing run start",
     "install-frontend": "npm --prefix landing install"
   },
   "devDependencies": {
