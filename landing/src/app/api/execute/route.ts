@@ -91,6 +91,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Field 'stdin' must be a string" }, { status: 400 });
     }
 
+    // Support remote compiler backend (e.g., when Next.js is deployed on Vercel)
+    const remoteCompilerUrl = process.env.COMPILER_API_URL || process.env.NEXT_PUBLIC_COMPILER_API_URL;
+    if (remoteCompilerUrl) {
+      try {
+        const remoteRes = await fetch(remoteCompilerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, stdin: stdinText || null }),
+        });
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData);
+      } catch (remoteErr) {
+        console.error('Remote compiler error:', remoteErr);
+        return NextResponse.json(
+          { ok: false, output: '', error: `Remote compiler connection failed: ${remoteErr}` },
+          { status: 502 }
+        );
+      }
+    }
+
     const t0 = performance.now();
     const result = await runPythonCompiler(code, stdinText || null);
     const elapsedMs = performance.now() - t0;
