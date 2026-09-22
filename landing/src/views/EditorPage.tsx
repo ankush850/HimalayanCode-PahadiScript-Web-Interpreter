@@ -77,6 +77,25 @@ export default function EditorPage() {
         if (data.error) parts.push(data.error);
         setTerminalOut(parts.join('\n') || 'Unknown error');
       }
+
+      // Save execution locally in browser storage (zero database required)
+      try {
+        const historyRaw = localStorage.getItem('pahadi_execution_history');
+        const historyList = historyRaw ? JSON.parse(historyRaw) : [];
+        const newRun = {
+          id: Date.now(),
+          code,
+          success: Boolean(data.ok),
+          execution_time_ms: data.execution_time_ms || 0,
+          output: data.output || '',
+          error: data.error || null,
+          created_at: new Date().toISOString(),
+        };
+        historyList.unshift(newRun);
+        localStorage.setItem('pahadi_execution_history', JSON.stringify(historyList.slice(0, 200)));
+      } catch (saveErr) {
+        console.warn('Could not save execution to local storage:', saveErr);
+      }
     } catch (e) {
       setStatus('Network');
       setTerminalOut(String(e));

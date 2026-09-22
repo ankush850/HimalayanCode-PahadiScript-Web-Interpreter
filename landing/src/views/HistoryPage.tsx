@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
+import { Trash2, Play, CheckCircle2, XCircle } from 'lucide-react';
 
 interface HistoryItem {
   id: number;
@@ -15,44 +15,29 @@ interface HistoryItem {
 }
 
 export default function HistoryPage() {
-  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  // Authenticate user check
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
-  // Fetch execution history timeline data
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchHistory = async () => {
-      try {
-        const res = await fetch('/api/history');
-        const data = await res.json();
-
-        if (data.ok) {
-          setHistory(data.items);
-        } else {
-          setError(data.error || 'Failed to fetch execution history');
-        }
-      } catch (err) {
-        console.error('Error fetching history:', err);
-        setError('Failed to connect to the backend server');
-      } finally {
-        setLoading(false);
+    try {
+      const raw = localStorage.getItem('pahadi_execution_history');
+      if (raw) {
+        setHistory(JSON.parse(raw));
       }
-    };
+    } catch (e) {
+      console.error('Error loading history from localStorage:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    fetchHistory();
-  }, [user]);
+  const handleClearHistory = () => {
+    if (confirm('Are you sure you want to clear your local execution history?')) {
+      localStorage.removeItem('pahadi_execution_history');
+      setHistory([]);
+    }
+  };
 
   const handleRerun = (codeString: string) => {
     sessionStorage.setItem('pahadi_rerun_code', codeString);
@@ -63,24 +48,20 @@ export default function HistoryPage() {
     if (!isoString) return '';
     try {
       const date = new Date(isoString);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + date.toLocaleDateString();
+      return (
+        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+        ' · ' +
+        date.toLocaleDateString()
+      );
     } catch {
       return isoString;
     }
   };
 
-  if (authLoading || (user && loading)) {
+  if (loading) {
     return (
       <div className="py-20 text-center text-sm text-[#6F6F6F]">
-        Loading history timeline...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg p-4 text-center my-10">
-        {error}
+        Loading history...
       </div>
     );
   }
@@ -88,21 +69,42 @@ export default function HistoryPage() {
   return (
     <div className="space-y-8 animate-fade-rise max-w-[800px] mx-auto">
       {/* Title */}
-      <div className="dash-hero">
-        <h1 className="text-4xl font-display font-normal text-black">
-          Execution History
-        </h1>
-        <p className="text-sm text-[#6F6F6F]">
-          Timeline review of your compile runs, outputs, and performance.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-display font-normal text-black">
+            Execution History
+          </h1>
+          <p className="text-sm text-[#6F6F6F] mt-1">
+            Private browser timeline of your past compile runs and outputs.
+          </p>
+        </div>
+
+        {history.length > 0 && (
+          <button
+            onClick={handleClearHistory}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-colors self-start sm:self-auto"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear History</span>
+          </button>
+        )}
       </div>
 
       {/* History timeline container */}
-      <div className="glass p-8 rounded-[24px]">
+      <div className="p-8 rounded-3xl border border-black/10 bg-white/90 backdrop-blur-xl shadow-xl">
         {history.length === 0 ? (
-          <p className="text-sm text-[#6F6F6F] py-8 text-center">
-            No scripts executed yet. Run code in the editor to see your timeline here.
-          </p>
+          <div className="text-center py-12">
+            <p className="text-base text-black font-medium">No scripts executed yet</p>
+            <p className="text-xs text-[#6F6F6F] mt-1 max-w-sm mx-auto">
+              Run any PahadiScript program in the editor. Your runs will be saved privately in your browser.
+            </p>
+            <button
+              onClick={() => router.push('/editor')}
+              className="mt-6 rounded-full px-6 py-2.5 bg-black text-white text-xs font-medium hover:scale-[1.03] transition-transform"
+            >
+              Open Editor
+            </button>
+          </div>
         ) : (
           <div className="space-y-4">
             {history.map((row) => (
@@ -110,12 +112,12 @@ export default function HistoryPage() {
                 key={row.id}
                 className="flex items-center justify-between gap-4 p-4 border border-black/5 bg-[#FAF9F6] rounded-2xl hover:border-black/20 transition-all"
               >
-                <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      row.success ? 'bg-green-500' : 'bg-red-500'
-                    }`}
-                  />
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  {row.success ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                  )}
                   <div className="flex-1 min-w-0">
                     <code className="text-xs text-[#222222] font-mono block truncate max-h-[1.5rem] overflow-hidden mb-1 select-text">
                       {row.code}
@@ -127,9 +129,10 @@ export default function HistoryPage() {
                 </div>
                 <button
                   onClick={() => handleRerun(row.code)}
-                  className="rounded-full px-4 py-1.5 bg-transparent border border-black/10 text-black text-xs font-medium hover:bg-black hover:text-white transition-all flex-shrink-0"
+                  className="rounded-full px-4 py-1.5 bg-transparent border border-black/10 text-black text-xs font-medium hover:bg-black hover:text-white transition-all flex items-center gap-1 shrink-0"
                 >
-                  Rerun
+                  <Play className="w-3 h-3" />
+                  <span>Rerun</span>
                 </button>
               </div>
             ))}

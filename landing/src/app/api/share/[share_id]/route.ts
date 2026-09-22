@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../../lib/db';
+
+declare global {
+  var __pahadi_shares: Map<string, string> | undefined;
+}
+
+const shares = globalThis.__pahadi_shares || new Map<string, string>();
+globalThis.__pahadi_shares = shares;
 
 export async function GET(
   request: Request,
@@ -7,15 +13,15 @@ export async function GET(
 ) {
   try {
     const { share_id } = await params;
-    const share = await db.getShare(share_id);
+    const code = shares.get(share_id);
 
-    if (!share) {
+    if (!code) {
       return NextResponse.json({ ok: false, error: 'Shared snippet not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       ok: true,
-      code: share.code,
+      code,
     });
   } catch (err) {
     console.error('Share Get API Error:', err);
