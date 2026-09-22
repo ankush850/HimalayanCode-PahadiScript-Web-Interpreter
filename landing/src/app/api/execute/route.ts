@@ -1,12 +1,28 @@
 import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import path from 'path';
-import { getSessionUser } from '../../../lib/session';
-import { db } from '../../../lib/db';
+import fs from 'fs';
 
-function runPythonCompiler(code: string, stdinText: string | null): Promise<{ ok: boolean; output: string; error: string | null }> {
+function getCompilerPath(): string {
+  const candidates = [
+    path.join(process.cwd(), 'run_compiler.py'),
+    path.join(process.cwd(), '../run_compiler.py'),
+    path.resolve(process.cwd(), '..', 'run_compiler.py'),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return path.join(process.cwd(), '../run_compiler.py');
+}
+
+function runPythonCompiler(
+  code: string,
+  stdinText: string | null
+): Promise<{ ok: boolean; output: string; error: string | null }> {
   return new Promise((resolve) => {
-    const processPath = path.join(process.cwd(), '../run_compiler.py');
+    const processPath = getCompilerPath();
     const child = spawn('python', [processPath]);
 
     let stdoutData = '';
@@ -77,18 +93,6 @@ export async function POST(request: Request) {
     const t0 = performance.now();
     const result = await runPythonCompiler(code, stdinText || null);
     const elapsedMs = performance.now() - t0;
-
-    const userId = await getSessionUser();
-    if (userId) {
-      await db.addExecution(
-        userId,
-        code,
-        result.ok,
-        elapsedMs,
-        result.ok ? result.output : (result.output || null),
-        result.ok ? null : result.error
-      );
-    }
 
     return NextResponse.json({
       ok: result.ok,

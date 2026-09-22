@@ -1,13 +1,27 @@
 @import "tailwindcss";
-@import './styles/fonts.css';
 @import './styles/theme.css';
 
 @config "../tailwind.config.js";
 
+:root {
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-instrument-serif: 'Instrument Serif', Georgia, serif;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter);
   background-color: #FFFFFF;
   color: #000000;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-instrument-serif);
+}
+
+.font-body {
+  font-family: var(--font-inter);
 }

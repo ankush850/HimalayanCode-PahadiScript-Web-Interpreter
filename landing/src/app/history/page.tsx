@@ -1,14 +1,20 @@
-"use client";
-
-import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
 import Layout from '../../components/Layout';
+import HistoryClient from './HistoryClient';
 
-const HistoryPage = dynamic(() => import('../../views/HistoryPage'), { ssr: false });
+export const metadata: Metadata = {
+  title: 'Execution History',
+  description:
+    'Review your past PahadiScript program executions, code snippets, timestamps, outputs, and runtime logs.',
+  alternates: {
+    canonical: '/history',
+  },
+};
 
 export default function Page() {
   return (
     <Layout>
-      <HistoryPage />
+      <HistoryClient />
     </Layout>
   );
 }

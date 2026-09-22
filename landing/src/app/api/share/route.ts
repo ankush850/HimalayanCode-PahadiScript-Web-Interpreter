@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getSessionUser } from '../../../lib/session';
-import { db } from '../../../lib/db';
+
+declare global {
+  var __pahadi_shares: Map<string, string> | undefined;
+}
+
+const shares = globalThis.__pahadi_shares || new Map<string, string>();
+globalThis.__pahadi_shares = shares;
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +19,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Code exceeds maximum length' }, { status: 400 });
     }
 
-    const userId = await getSessionUser();
-    const share = await db.addShare(code, userId);
+    // Generate random 8-character share ID
+    const shareId = Math.random().toString(36).substring(2, 10);
+    shares.set(shareId, code);
 
     return NextResponse.json({
       ok: true,
-      share_id: share.id,
-      url: `/share/${share.id}`,
+      share_id: shareId,
+      url: `/share/${shareId}`,
     });
   } catch (err) {
     console.error('Share Post API Error:', err);
