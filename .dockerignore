@@ -1,0 +1,7 @@
+node_modules
+landing/node_modules
+landing/.next
+.git
+.gitignore
+.agents
+*.log

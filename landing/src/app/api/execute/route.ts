@@ -23,7 +23,8 @@ function runPythonCompiler(
 ): Promise<{ ok: boolean; output: string; error: string | null }> {
   return new Promise((resolve) => {
     const processPath = getCompilerPath();
-    const child = spawn('python', [processPath]);
+    const pythonBin = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+    const child = spawn(pythonBin, [processPath]);
 
     let stdoutData = '';
     let stderrData = '';
