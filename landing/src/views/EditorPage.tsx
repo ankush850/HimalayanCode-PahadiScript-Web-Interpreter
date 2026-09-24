@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CodeMirror from '@uiw/react-codemirror';
+import { runPahadiInBrowser } from '../lib/browserRunner';
 
 const DEFAULT_CODE = `shuru {
   bol "Namaste PahadiScript!"
@@ -12,7 +13,7 @@ const DEFAULT_CODE = `shuru {
 export default function EditorPage() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [terminalOut, setTerminalOut] = useState('');
-  const [status, setStatus] = useState<'Ready' | 'Running…' | 'Success' | 'Error' | 'Network' | 'File Loaded' | 'Upload Error' | 'Share failed' | 'Share Error'>('Ready');
+  const [status, setStatus] = useState<string>('Ready');
   const [execTime, setExecTime] = useState<number | null>(null);
   
   const [shareBoxVisible, setShareBoxVisible] = useState(false);
@@ -58,13 +59,32 @@ export default function EditorPage() {
     setExecTime(null);
 
     try {
-      const res = await fetch('/api/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-      const data = await res.json();
-      
+      let data: { ok: boolean; output: string; error: string | null; execution_time_ms?: number } | null = null;
+
+      // 1. Try server endpoint first (works on local development and Render Docker)
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+        const serverData = await res.json();
+
+        // If server failed because Python is missing on server (e.g. Vercel serverless Lambda)
+        if (serverData.error && (serverData.error.includes('ENOENT') || serverData.error.includes('subprocess'))) {
+          console.info('Server lacks Python binary. Running via in-browser Pyodide engine…');
+        } else {
+          data = serverData;
+        }
+      } catch {
+        console.info('Server API unreachable. Falling back to in-browser compiler…');
+      }
+
+      // 2. If server failed or lacks Python, execute directly in the browser (100% Vercel compatible!)
+      if (!data) {
+        data = await runPahadiInBrowser(code, (s) => setStatus(s));
+      }
+
       setExecTime(data.execution_time_ms != null ? data.execution_time_ms : null);
 
       if (data.ok) {
@@ -97,8 +117,8 @@ export default function EditorPage() {
         console.warn('Could not save execution to local storage:', saveErr);
       }
     } catch (e) {
-      setStatus('Network');
-      setTerminalOut(String(e));
+      setStatus('Error');
+      setTerminalOut(`Execution failed: ${String(e)}`);
     }
   };
 
