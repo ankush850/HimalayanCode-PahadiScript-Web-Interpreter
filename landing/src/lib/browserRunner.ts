@@ -76,9 +76,19 @@ async function getPyodideInstance(onProgress?: (status: string) => void): Promis
 
     await pyodide.runPythonAsync(`
 import sys
+import json
+
 if '/home/pyodide' not in sys.path:
     sys.path.insert(0, '/home/pyodide')
+
 from app.compiler.interpreter import execute
+
+def __run_pahadi__(source_code):
+    try:
+        ok, out, err = execute(source_code, stdin_text=None)
+        return json.dumps({"ok": ok, "output": out, "error": err})
+    except Exception as e:
+        return json.dumps({"ok": False, "output": "", "error": str(e)})
 `);
 
     window.__pyodideInstance = pyodide;
@@ -96,24 +106,30 @@ export async function runPahadiInBrowser(
   const pyodide = await getPyodideInstance(onProgress);
 
   onProgress?.('Running…');
-  pyodide.globals.set('__source_code__', code);
-
-  const resultJson = await pyodide.runPythonAsync(`
-import json
-try:
-    _ok, _out, _err = execute(__source_code__, stdin_text=None)
-    json.dumps({"ok": _ok, "output": _out, "error": _err})
-except Exception as _e:
-    json.dumps({"ok": False, "output": "", "error": str(_e)})
-`);
+  const runner = pyodide.globals.get('__run_pahadi__');
+  let resultJson: any;
+  try {
+    resultJson = runner(code);
+  } finally {
+    runner?.destroy?.();
+  }
 
   const elapsed = Math.round((performance.now() - t0) * 100) / 100;
-  const parsed = JSON.parse(resultJson);
+  let parsed: any;
+  try {
+    parsed = typeof resultJson === 'string' ? JSON.parse(resultJson) : resultJson;
+  } catch (parseErr) {
+    parsed = {
+      ok: false,
+      output: '',
+      error: `Compiler output error: ${String(parseErr)}. Raw: ${String(resultJson)}`,
+    };
+  }
 
   return {
-    ok: Boolean(parsed.ok),
-    output: parsed.output || '',
-    error: parsed.error || null,
+    ok: Boolean(parsed?.ok),
+    output: parsed?.output || '',
+    error: parsed?.error || null,
     execution_time_ms: elapsed,
   };
 }
